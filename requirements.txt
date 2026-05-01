@@ -1,0 +1,37 @@
+# Core ecosystem (modern)
+langchain>=1.0.0
+langchain-core>=1.0.0
+langgraph>=0.1.0
+
+# LLM provider
+langchain-mistralai>=1.1.0
+
+# Tools
+tavily-python>=0.3.0
+
+# Web scraping
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+lxml>=5.0.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# Async
+aiohttp>=3.9.0
+
+# Data
+pandas>=2.0.0
+
+# Utilities
+rich>=13.7.0
+tenacity>=8.2.0
+orjson>=3.9.0
+pydantic>=2.5.0
+
+# HTML parsing
+html5lib>=1.1
+
+# Server
+fastapi>=0.110.0
+uvicorn>=0.29.0

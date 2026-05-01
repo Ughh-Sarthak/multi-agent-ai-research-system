@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Agent Research System</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0a0f;--bg2:#111118;
+      --accent:#7c6dff;--accent2:#a78bfa;--accent3:#38bdf8;
+      --green:#4ade80;--amber:#fbbf24;--red:#f87171;
+      --text:#e4e4f0;--muted:#8888aa;--border:rgba(124,109,255,0.2);
+      --card:#13131f;
+    }
+    body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;padding:36px 24px}
+    .container{max-width:860px;margin:0 auto}
+    h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{font-size:13px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace}
+    .header{margin-bottom:28px}
+    .badge{display:inline-flex;align-items:center;gap:5px;background:rgba(124,109,255,0.12);border:0.5px solid var(--border);color:var(--accent2);font-size:11px;font-family:'DM Mono',monospace;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+    .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .input-row{display:flex;gap:12px;margin-bottom:28px}
+    .topic-input{flex:1;background:var(--card);border:0.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'Syne',sans-serif;font-size:15px;padding:12px 16px;outline:none;transition:border-color 0.2s}
+    .topic-input::placeholder{color:var(--muted)}
+    .topic-input:focus{border-color:var(--accent)}
+    .run-btn{background:var(--accent);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:12px 24px;transition:all 0.2s;white-space:nowrap}
+    .run-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+    .run-btn:active{transform:scale(0.98)}
+    .run-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+    .pipeline{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+    .step-card{background:var(--card);border:0.5px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;transition:border-color 0.3s}
+    .step-card.active{border-color:var(--accent)}
+    .step-card.done{border-color:rgba(74,222,128,0.3)}
+    .step-card.error{border-color:rgba(248,113,113,0.3)}
+    .step-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px}
+    .step-name{font-size:14px;font-weight:600;margin-bottom:4px}
+    .step-desc{font-size:12px;color:var(--muted);line-height:1.5}
+    .step-status{display:flex;align-items:center;gap:6px;margin-top:10px;font-family:'DM Mono',monospace;font-size:11px}
+    .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15)}
+    .dot.spinning{background:var(--accent);animation:spin-glow 1s linear infinite}
+    .dot.green{background:var(--green)}
+    .dot.red{background:var(--red)}
+    @keyframes spin-glow{0%,100%{opacity:1}50%{opacity:0.2}}
+    .step-bar{height:2px;background:var(--border);border-radius:2px;margin-top:12px;overflow:hidden}
+    .step-bar-fill{height:100%;background:var(--accent);width:0%;transition:width 0.5s;border-radius:2px}
+    .step-card.done .step-bar-fill{width:100%;background:var(--green)}
+    .step-card.active .step-bar-fill{animation:loading-bar 1.5s ease-in-out infinite}
+    @keyframes loading-bar{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
+    .tag{display:inline-flex;background:rgba(56,189,248,0.1);border:0.5px solid rgba(56,189,248,0.2);color:var(--accent3);font-size:10px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:4px;margin-left:auto}
+    .out-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .out-label::after{content:'';flex:1;height:0.5px;background:var(--border)}
+    .report-box{background:var(--card);border:0.5px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow-y:auto;color:var(--text)}
+    .report-box::-webkit-scrollbar{width:4px}
+    .report-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+    .placeholder{color:var(--muted);font-size:13px;font-style:italic}
+    .feedback-wrap{margin-top:16px}
+    .feedback-section{background:var(--card);border:0.5px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px}
+    .feedback-block{margin-bottom:14px}
+    .feedback-block:last-child{margin-bottom:0}
+    .feedback-block h4{font-size:11px;font-weight:600;margin-bottom:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-family:'DM Mono',monospace}
+    .feedback-block p{font-size:13px;line-height:1.7;white-space:pre-wrap}
+    .score-row{display:flex;gap:12px;margin-top:12px}
+    .score-chip{flex:1;background:var(--card);border:0.5px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 14px;text-align:center}
+    .score-chip .val{font-size:22px;font-weight:700}
+    .score-chip .lbl{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+    .copy-btn{background:rgba(124,109,255,0.1);border:0.5px solid var(--border);border-radius:6px;color:var(--accent2);cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;padding:4px 10px;margin-left:auto;display:inline-flex}
+    .copy-btn:hover{background:rgba(124,109,255,0.2)}
+    .error-box{background:rgba(248,113,113,0.08);border:0.5px solid rgba(248,113,113,0.3);border-radius:10px;color:var(--red);font-family:'DM Mono',monospace;font-size:12px;padding:12px 16px;margin-bottom:16px;display:none}
+    @media(max-width:600px){.pipeline{grid-template-columns:1fr}.input-row{flex-direction:column}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="badge"><span class="badge-dot"></span> Multi-Agent Research System</div>
+  <div class="header">
+    <h1>Research Pipeline</h1>
+    <p class="subtitle">search → scrape → write → critique // powered by Mistral AI</p>
+  </div>
+
+  <div class="input-row">
+    <input class="topic-input" id="topicInput" placeholder="Enter a research topic... (e.g. Quantum Computing, CRISPR, Web3)" />
+    <button class="run-btn" id="runBtn" onclick="startPipeline()">Run Pipeline</button>
+  </div>
+
+  <div class="pipeline">
+    <div class="step-card" id="step1">
+      <div class="step-num">STEP 01</div>
+      <div class="step-name">Search Agent</div>
+      <div class="step-desc">Queries the web via Tavily for recent, reliable sources on your topic</div>
+      <div class="step-status"><span class="dot" id="dot1"></span><span id="status1">Idle</span><span class="tag">web_search</span></div>
+      <div class="step-bar"><div class="step-bar-fill"></div></div>
+    </div>
+    <div class="step-card" id="step2">
+      <div class="step-num">STEP 02</div>
+      <div class="step-name">Reader Agent</div>
+      <div class="step-desc">Picks the most relevant URL and scrapes deep content from the page</div>
+      <div class="step-status"><span class="dot" id="dot2"></span><span id="status2">Waiting</span><span class="tag">scrape_url</span></div>
+      <div class="step-bar"><div class="step-bar-fill"></div></div>
+    </div>
+    <div class="step-card" id="step3">
+      <div class="step-num">STEP 03</div>
+      <div class="step-name">Writer Chain</div>
+      <div class="step-desc">Synthesizes gathered research into a structured, professional report</div>
+      <div class="step-status"><span class="dot" id="dot3"></span><span id="status3">Waiting</span><span class="tag">LLM chain</span></div>
+      <div class="step-bar"><div class="step-bar-fill"></div></div>
+    </div>
+    <div class="step-card" id="step4">
+      <div class="step-num">STEP 04</div>
+      <div class="step-name">Critic Chain</div>
+      <div class="step-desc">Evaluates the report for accuracy, depth, and quality with a score</div>
+      <div class="step-status"><span class="dot" id="dot4"></span><span id="status4">Waiting</span><span class="tag">LLM chain</span></div>
+      <div class="step-bar"><div class="step-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="out-label">Final Report</div>
+  <div class="report-box" id="reportBox"><span class="placeholder">Your research report will appear here after the pipeline runs...</span></div>
+
+  <div id="feedbackWrap" class="feedback-wrap" style="display:none">
+    <div class="out-label">Critic Feedback <button class="copy-btn" onclick="copyFeedback()">copy</button></div>
+    <div class="feedback-section" id="feedbackSection"></div>
+    <div class="score-row" id="scoreRow"></div>
+  </div>
+</div>
+
+<script>
+  let feedbackText = '';
+  let running = false;
+  let timers = [];
+
+  function setStep(n, st, msg){
+    const card = document.getElementById('step'+n);
+    const dot = document.getElementById('dot'+n);
+    document.getElementById('status'+n).textContent = msg;
+    card.className = 'step-card'+(st==='active'?' active':st==='done'?' done':st==='error'?' error':'');
+    dot.className = 'dot'+(st==='active'?' spinning':st==='done'?' green':st==='error'?' red':'');
+  }
+
+  function resetAll(){
+    timers.forEach(clearTimeout);
+    timers = [];
+    for(let i=1;i<=4;i++) setStep(i,'','Waiting');
+    setStep(1,'','Idle');
+    document.getElementById('reportBox').innerHTML='<span class="placeholder">Your research report will appear here after the pipeline runs...</span>';
+    document.getElementById('feedbackWrap').style.display='none';
+    document.getElementById('errorBox').style.display='none';
+  }
+
+  function showError(msg){
+    const box = document.getElementById('errorBox');
+    box.textContent = 'Error: ' + msg;
+    box.style.display = 'block';
+  }
+
+  function parseFeedback(text){
+    const scoreMatch = text.match(/Score:\s*(\d+(?:\.\d+)?)\s*\/\s*10/i);
+    const strengthsMatch = text.match(/Strengths:\s*([\s\S]*?)(?=Areas to Improve:|$)/i);
+    const areasMatch = text.match(/Areas to Improve:\s*([\s\S]*?)(?=One line verdict:|$)/i);
+    const verdictMatch = text.match(/One line verdict:\s*([\s\S]*?)$/i);
+    return {
+      score: scoreMatch ? parseFloat(scoreMatch[1]) : null,
+      strengths: strengthsMatch ? strengthsMatch[1].trim() : '',
+      areas: areasMatch ? areasMatch[1].trim() : '',
+      verdict: verdictMatch ? verdictMatch[1].trim() : ''
+    };
+  }
+
+  function escHtml(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+  function renderFeedback(text){
+    feedbackText = text;
+    const f = parseFeedback(text);
+    const sec = document.getElementById('feedbackSection');
+    sec.innerHTML = '';
+    if(f.strengths) sec.innerHTML += `<div class="feedback-block"><h4>Strengths</h4><p>${escHtml(f.strengths)}</p></div>`;
+    if(f.areas) sec.innerHTML += `<div class="feedback-block"><h4>Areas to improve</h4><p>${escHtml(f.areas)}</p></div>`;
+    if(f.verdict) sec.innerHTML += `<div class="feedback-block"><h4>Verdict</h4><p style="font-style:italic;color:var(--accent2)">${escHtml(f.verdict)}</p></div>`;
+    const srow = document.getElementById('scoreRow');
+    if(f.score !== null){
+      const color = f.score>=7?'var(--green)':f.score>=5?'var(--amber)':'var(--red)';
+      const wordCount = document.getElementById('reportBox').textContent.trim().split(/\s+/).length;
+      srow.innerHTML = `
+        <div class="score-chip"><div class="val" style="color:${color}">${f.score}/10</div><div class="lbl">critic score</div></div>
+        <div class="score-chip"><div class="val" style="color:var(--accent2)">${Math.round(f.score*10)}%</div><div class="lbl">quality rating</div></div>
+        <div class="score-chip"><div class="val" style="color:var(--muted)">${wordCount}</div><div class="lbl">word count</div></div>`;
+    }
+  }
+
+  async function startPipeline(){
+    if(running) return;
+    const topic = document.getElementById('topicInput').value.trim();
+    if(!topic){ document.getElementById('topicInput').focus(); return; }
+
+    running = true;
+    document.getElementById('runBtn').disabled = true;
+    resetAll();
+
+    // Animate steps progressively while the backend is working
+    setStep(1,'active','Searching...');
+    timers.push(setTimeout(()=>{ setStep(1,'done','Complete'); setStep(2,'active','Scraping...'); }, 4000));
+    timers.push(setTimeout(()=>{ setStep(2,'done','Complete'); setStep(3,'active','Writing...'); }, 10000));
+    timers.push(setTimeout(()=>{ setStep(3,'done','Complete'); setStep(4,'active','Reviewing...'); }, 18000));
+
+    try{
+      const resp = await fetch('/api/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ topic })
+      });
+
+      if(!resp.ok){
+        const err = await resp.text();
+        throw new Error(err || 'Server returned an error');
+      }
+
+      const data = await resp.json();
+
+      // Clear timers and mark all done
+      timers.forEach(clearTimeout);
+      timers = [];
+      for(let i=1;i<=4;i++) setStep(i,'done','Complete');
+
+      document.getElementById('reportBox').textContent = data.report || 'No report generated.';
+      renderFeedback(data.feedback || '');
+      document.getElementById('feedbackWrap').style.display = 'block';
+
+    } catch(e){
+      timers.forEach(clearTimeout);
+      timers = [];
+      console.error(e);
+      for(let i=1;i<=4;i++){
+        if(document.getElementById('step'+i).classList.contains('active')){
+          setStep(i,'error','Error'); break;
+        }
+      }
+      showError(e.message);
+    }
+
+    running = false;
+    document.getElementById('runBtn').disabled = false;
+  }
+
+  function copyFeedback(){
+    navigator.clipboard.writeText(feedbackText);
+  }
+
+  document.getElementById('topicInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter') startPipeline();
+  });
+</script>
+</body>
+</html>
